@@ -39,5 +39,16 @@ for h in heading:
         print('Conclution Found')
     print(''.join(h.findAll(text=True)))
 
+# ------ function return the matching class text in different lines ------
+
+def find_matching_classes(className):
+    text = ''
+    lst = soup.find_all(class_=className)
+    for l in lst:
+        text += l.findAll(text=True)[0] + '\n'
+    return text
+
+className = 'Judg-Heading-2'
+print(find_matching_classes(className))
 
 
