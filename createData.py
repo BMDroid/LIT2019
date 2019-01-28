@@ -3,6 +3,7 @@ import pickle
 import string
 import operator
 import numpy as np
+import matplotlib.pyplot as plt
 from collections import Counter
 from bs4 import BeautifulSoup
 
