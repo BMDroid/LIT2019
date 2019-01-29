@@ -10,8 +10,8 @@ from bs4 import BeautifulSoup
 def load_data(fileName):
     data = np.loadtxt(fileName)
     m, n = np.shape(data)
-    X = data[:, 0: n - 4]
-    Y = data[-3::]
+    X = data[:, 0: n - 3]
+    Y = data[:, -3::]
     return X, Y, m, n
 
 def plot_hist(vec, bins=20):
