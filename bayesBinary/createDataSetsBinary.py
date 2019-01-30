@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import os
 import csv
 import string
@@ -11,24 +13,24 @@ def load_data(fileName):
     with open(fileName, 'r') as f:
         reader = csv.reader(f)
         lst = list(reader)
-    data = []
+    dataSet = []
     labels = []
     conclusions = []
     for l in lst: # if the table is complete, the slicing will not be needed
         case = []
         label = list(map(int, l[8].strip().replace('X', '-1').split('_')))
+        label = list(map(lambda x: 1 if x > 5 else 0, label))
         conclusion = 1 if l[4] == 'OS' else 0
         case.extend(l[9:15])
-        data.append(case)
+        dataSet.append(case)
         labels.append(label)
         conclusions.append(conclusion)
-        print(conclusions)
     return dataSet, labels, conclusions
 
 def read_stop_words(stopFileName):
-    file = open(stopFileName)
-    stopWords = list(map(lambda x: x[0:-1], file.readlines()))
-    return stopWords
+    with open(stopFileName, 'r') as file:
+        stopWords = list(map(lambda x: x[0:-1], file.readlines()))
+        return stopWords
 
 def clean_text(lst, stopWords):
     puncs = string.punctuation + '’' + '“' + '”'
@@ -66,23 +68,13 @@ if __name__ == '__main__':
     stopWords = read_stop_words(stopFileName)
 
     dataSet, labels, conclusions = load_data(fileName)
+    size = 10 # control the vocab list size
     
     for section, sectionIdx in similarityDict.items():
         sectionData = create_section_data(dataSet, labels, conclusions, sectionIdx, stopWords)
-        with open(f'{section}Data.txt', 'w') as file:
+        with open('{} Data.txt'.format(section), 'w') as file:
             file.writelines(' '.join(i) + '\n' for i in sectionData)
-        size = 50
         sectionVocab = create_vocab_list(dataSet, sectionIdx, stopWords, size)
-        with open(f'{./section}Vocab.txt', 'w') as f:
+        with open('{} Vocab.txt'.format(section), 'w') as f:
             for word in sectionVocab:
                 f.write("%s\n" % word)
-
-    
-
-
-
-
-
-
-
-
