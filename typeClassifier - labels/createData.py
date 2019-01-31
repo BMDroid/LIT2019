@@ -1,4 +1,5 @@
 import os
+import io
 import pickle
 import string
 import operator
@@ -15,7 +16,7 @@ def file_name_list(type):
     return fileNameList
 
 def read_html(fileName):
-    html = open(fileName)
+    html = io.open(fileName, mode="r", encoding="utf-8")
     soup = BeautifulSoup(html, 'html.parser') 
     return soup
 
@@ -67,9 +68,9 @@ def has_conclusion(soup, headingsList):
 def case_class(fileName):
     return fileName[-fileName[::-1].index('.') - 2]
 
-def tf_idf_vectorizer(cleanSoup, vecLength, wordsBag):
+def tf_idf_vectorizer(cleanSoup, vecLength, wordsBag, numLabels=1):
     length = len(cleanSoup)
-    vec = np.zeros(vecLength + 3) # for adding other labels
+    vec = np.zeros(vecLength + numLabels) # only add the class labels
     for idx, word in enumerate(wordsBag):
         vec[idx] = 1000 * cleanSoup.count(word) / length
     return vec
@@ -99,7 +100,7 @@ if __name__ == '__main__':
     stopFileName = 'stopWords.txt'
     stopWords = read_stop_words(stopFileName)
 
-    designedBagSize = 1500
+    designedBagSize = 2000
     dic = {'1': int(designedBagSize * 0.3), '2':int(designedBagSize * 0.05), '3': int(designedBagSize * 0.65)}
     
     vecLength, wordsBagCombined = words_bag_combined(dic)
@@ -112,6 +113,8 @@ if __name__ == '__main__':
     with open(wordsBagName, 'rb') as f:
         wordsBag = pickle.load(f)
     
+    numLabels = 3
+
     dataList = []
     type = 'Combined'
     fileNameListCombined = file_name_list(type)
@@ -123,12 +126,18 @@ if __name__ == '__main__':
         winOrLose = 1 if 'OS' in fileName else 0
         caseClass = case_class(fileName)
         cleanSoup = clean_soup(soup, stopWords)
-        vec = tf_idf_vectorizer(cleanSoup, dic[type], wordsBag)
-        vec[-3] = int(hasConclusion)
-        vec[-2] = winOrLose
-        vec[-1] = caseClass
+        vec = tf_idf_vectorizer(cleanSoup, dic[type], wordsBag, numLabels)
+        if numLabels == 3:
+            vec[-3] = int(hasConclusion)
+            vec[-2] = winOrLose
+            vec[-1] = caseClass
+        elif numLabels == 2:
+            vec[-2] = winOrLose
+            vec[-1] = caseClass
+        else:
+            vec[-1] = caseClass
         dataList.append(vec)
-    dataName = f'data{type}{vecLength}.txt'
+    dataName = f'{numLabels}data{type}{vecLength}.txt'
     np.savetxt(dataName, tuple(dataList))
 
 

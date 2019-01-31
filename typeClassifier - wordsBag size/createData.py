@@ -1,4 +1,5 @@
 import os
+import io
 import pickle
 import string
 import operator
@@ -15,7 +16,7 @@ def file_name_list(type):
     return fileNameList
 
 def read_html(fileName):
-    html = open(fileName)
+    html = io.open(fileName, mode="r", encoding="utf-8")
     soup = BeautifulSoup(html, 'html.parser') 
     return soup
 
@@ -69,7 +70,7 @@ def case_class(fileName):
 
 def tf_idf_vectorizer(cleanSoup, vecLength, wordsBag):
     length = len(cleanSoup)
-    vec = np.zeros(vecLength + 3)
+    vec = np.zeros(vecLength + 3) # for adding other labels
     for idx, word in enumerate(wordsBag):
         vec[idx] = 1000 * cleanSoup.count(word) / length
     return vec
@@ -98,19 +99,22 @@ if __name__ == '__main__':
 
     stopFileName = 'stopWords.txt'
     stopWords = read_stop_words(stopFileName)
-    dic = {'1':300, '2':50, '3': 650}
+
+    designedBagSize = 1500
+    dic = {'1': int(designedBagSize * 0.3), '2':int(designedBagSize * 0.05), '3': int(designedBagSize * 0.65)}
     
-    # vecLength, wordsBagCombined = words_bag_combined(dic)
-    # dic['combined']= vecLength # vecLength = 679
-    dic['combined'] = 679
-    wordsBagName = 'wordsBagCombined.pkl'
-    # with open(wordsBagName, 'wb') as f:
-    #    pickle.dump(wordsBagCombined, f)
+    vecLength, wordsBagCombined = words_bag_combined(dic)
+    print(vecLength)
+    dic['Combined']= vecLength
+
+    wordsBagName = f'wordsBagCombined{vecLength}.pkl'
+    with open(wordsBagName, 'wb') as f:
+        pickle.dump(wordsBagCombined, f)
     with open(wordsBagName, 'rb') as f:
         wordsBag = pickle.load(f)
     
     dataList = []
-    type = 'combined'
+    type = 'Combined'
     fileNameListCombined = file_name_list(type)
     for fileName in fileNameListCombined:
         soup = read_html(fileName)
@@ -125,7 +129,7 @@ if __name__ == '__main__':
         vec[-2] = winOrLose
         vec[-1] = caseClass
         dataList.append(vec)
-    dataName = 'data' + str(type) + '.txt'
+    dataName = f'data{type}{vecLength}.txt'
     np.savetxt(dataName, tuple(dataList))
 
 

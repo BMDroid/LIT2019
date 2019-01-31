@@ -1,3 +1,6 @@
+# coding: utf-8
+
+import io
 import os
 import pickle
 import string
@@ -8,14 +11,14 @@ from collections import Counter
 from bs4 import BeautifulSoup
 
 def file_name_list(type):
-    fileList = os.listdir(f'./{type}')
-    if '.DS_store ' in fileList:
+    fileList = os.listdir('./{}'.format(type))
+    if '.DS_store' in fileList:
         fileList.remove('.DS_store ')
-    fileNameList = list(map(lambda x: f'./{type}//' + x, fileList))
+    fileNameList = list(map(lambda x: './{}/{}'.format(type, x), fileList))
     return fileNameList
 
 def read_html(fileName):
-    html = open(fileName)
+    html = io.open(fileName, mode="r", encoding="utf-8")
     soup = BeautifulSoup(html, 'html.parser') 
     return soup
 
@@ -67,9 +70,9 @@ def has_conclusion(soup, headingsList):
 def case_class(fileName):
     return fileName[-fileName[::-1].index('.') - 2]
 
-def tf_idf_vectorizer(cleanSoup, vecLength, wordsBag, numLabels=1):
+def tf_idf_vectorizer(cleanSoup, vecLength, wordsBag):
     length = len(cleanSoup)
-    vec = np.zeros(vecLength + numLabels) # only add the class labels
+    vec = np.zeros(vecLength + 3)
     for idx, word in enumerate(wordsBag):
         vec[idx] = 1000 * cleanSoup.count(word) / length
     return vec
@@ -96,26 +99,21 @@ def words_bag_combined(dic):
 
 if __name__ == '__main__':
 
-    stopFileName = 'stopWords.txt'
+    stopFileName = './stopWords.txt'
     stopWords = read_stop_words(stopFileName)
-
-    designedBagSize = 2000
-    dic = {'1': int(designedBagSize * 0.3), '2':int(designedBagSize * 0.05), '3': int(designedBagSize * 0.65)}
+    dic = {'1':300, '2':50, '3': 650}
     
-    vecLength, wordsBagCombined = words_bag_combined(dic)
-    print(vecLength)
-    dic['Combined']= vecLength
-
-    wordsBagName = f'wordsBagCombined{vecLength}.pkl'
-    with open(wordsBagName, 'wb') as f:
-        pickle.dump(wordsBagCombined, f)
+    # vecLength, wordsBagCombined = words_bag_combined(dic)
+    # dic['combined']= vecLength # vecLength = 679
+    dic['combined'] = 679
+    wordsBagName = 'wordsBagCombined.pkl'
+    # with open(wordsBagName, 'wb') as f:
+    #    pickle.dump(wordsBagCombined, f)
     with open(wordsBagName, 'rb') as f:
         wordsBag = pickle.load(f)
     
-    numLabels = 3
-
     dataList = []
-    type = 'Combined'
+    type = 'combined'
     fileNameListCombined = file_name_list(type)
     for fileName in fileNameListCombined:
         soup = read_html(fileName)
@@ -125,18 +123,12 @@ if __name__ == '__main__':
         winOrLose = 1 if 'OS' in fileName else 0
         caseClass = case_class(fileName)
         cleanSoup = clean_soup(soup, stopWords)
-        vec = tf_idf_vectorizer(cleanSoup, dic[type], wordsBag, numLabels)
-        if numLabels == 3:
-            vec[-3] = int(hasConclusion)
-            vec[-2] = winOrLose
-            vec[-1] = caseClass
-        elif numLabels == 2:
-            vec[-2] = winOrLose
-            vec[-1] = caseClass
-        else:
-            vec[-1] = caseClass
+        vec = tf_idf_vectorizer(cleanSoup, dic[type], wordsBag)
+        vec[-3] = int(hasConclusion)
+        vec[-2] = winOrLose
+        vec[-1] = caseClass
         dataList.append(vec)
-    dataName = f'{numLabels}data{type}{vecLength}.txt'
+    dataName = 'data' + str(type) + '.txt'
     np.savetxt(dataName, tuple(dataList))
 
 
