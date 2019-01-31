@@ -68,7 +68,7 @@ def has_conclusion(soup, headingsList):
 def case_class(fileName):
     return fileName[-fileName[::-1].index('.') - 2]
 
-def tf_idf_vectorizer(cleanSoup, vecLength, wordsBag, numLabels=1):
+def tf_vectorizer(cleanSoup, vecLength, wordsBag, numLabels=1):
     length = len(cleanSoup)
     vec = np.zeros(vecLength + numLabels) # only add the class labels
     for idx, word in enumerate(wordsBag):
@@ -126,7 +126,7 @@ if __name__ == '__main__':
         winOrLose = 1 if 'OS' in fileName else 0
         caseClass = case_class(fileName)
         cleanSoup = clean_soup(soup, stopWords)
-        vec = tf_idf_vectorizer(cleanSoup, dic[type], wordsBag, numLabels)
+        vec = tf_vectorizer(cleanSoup, dic[type], wordsBag, numLabels)
         if numLabels == 3:
             vec[-3] = int(hasConclusion)
             vec[-2] = winOrLose
