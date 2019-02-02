@@ -103,14 +103,18 @@ if __name__ == '__main__':
     stopWords = read_stop_words(stopFileName)
     dic = {'1':300, '2':50, '3': 650}
     
-    # vecLength, wordsBagCombined = words_bag_combined(dic)
+    vecLength, wordsBagCombined = words_bag_combined(dic)
     # dic['combined']= vecLength # vecLength = 679
     dic['combined'] = 679
     wordsBagName = 'wordsBagCombined.pkl'
+    wordsBagName = 'wordsBagCombined.txt'
     # with open(wordsBagName, 'wb') as f:
     #    pickle.dump(wordsBagCombined, f)
-    with open(wordsBagName, 'rb') as f:
-        wordsBag = pickle.load(f)
+    #with open(wordsBagName, 'rb') as f:
+    #    wordsBag = pickle.load(f)
+    with open(wordsBagName, 'w') as f:
+        for word in wordsBagCombined:
+            f.write("{:s}\n" .format(word))
     
     dataList = []
     type = 'combined'
@@ -123,7 +127,7 @@ if __name__ == '__main__':
         winOrLose = 1 if 'OS' in fileName else 0
         caseClass = case_class(fileName)
         cleanSoup = clean_soup(soup, stopWords)
-        vec = tf_vectorizer(cleanSoup, dic[type], wordsBag)
+        vec = tf_vectorizer(cleanSoup, dic[type], wordsBagCombined)
         vec[-3] = int(hasConclusion)
         vec[-2] = winOrLose
         vec[-1] = caseClass
